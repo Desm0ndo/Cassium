@@ -13,7 +13,7 @@ using namespace std;
 int _tmain(int argc, char *argv []) {
 	string input = \
 		"$ THIS IS A COMMENT $\n" \
-		"variable := 123;\n" \
+		"variable := 123.456;\n" \
 		"print (variable);\n";
 	/*
 	vector<string> args;
@@ -38,6 +38,7 @@ int _tmain(int argc, char *argv []) {
 		cout << "Scanning the source failed: " << e.what () << endl;
 		return 1;
 	}
+	system ("pause");
 	return 0;
 }
 

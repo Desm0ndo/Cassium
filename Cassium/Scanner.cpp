@@ -26,49 +26,40 @@ list<Token> Scanner::Scan (string src) {
 			++pos;
 		if (!CanAdvance (pos, 1, source))
 			break;
-		if (isalpha (Peek (pos, 1, source)) || isdigit (Peek (pos, 1, source))) {
+		if (isalnum (Peek (pos, 1, source))) {
 			tokens.push_back (ScanIdentifier ());
 			continue;
 		}
 		switch (Peek (pos, 1, source)) {
 			case '\'':
 			case '"':
-				cout << "Scanning string." << endl;
 				tokens.push_back (ScanString ());
 				break;
 			case '$':
-				cout << "Scanning comment." << endl;
 				++pos;
 				while (CanAdvance (pos, 1, source) && Peek (pos, 1, source) != '$')
 					++pos;
 				++pos;
 				break;
 			case ';':
-				cout << "Scanning expression terminator (semicolon)." << endl;
 				tokens.push_back (Token (TokenType::LineTerminator, string (&Read (pos, source))));
 				break;
 			case '(':
-				cout << "Scanning opening parenthesis." << endl;
 				tokens.push_back (Token (TokenType::OpeningParen, string (&Read (pos, source))));
 				break;
 			case ')':
-				cout << "Scanning closing parenthesis." << endl;
 				tokens.push_back (Token (TokenType::ClosingParen, string (&Read (pos, source))));
 				break;
 			case '{':
-				cout << "Scanning opening bracket." << endl;
 				tokens.push_back (Token (TokenType::OpeningBracket, string (&Read (pos, source))));
 				break;
 			case '}':
-				cout << "Scanning closing bracket." << endl;
 				tokens.push_back (Token (TokenType::ClosingBracket, string (&Read (pos, source))));
 				break;
 			case '[':
-				cout << "Scanning opening square bracket." << endl;
 				tokens.push_back (Token (TokenType::OpeningSquareBracket, string (&Read (pos, source))));
 				break;
 			case ']':
-				cout << "Scanning closing square bracket." << endl;
 				tokens.push_back (Token (TokenType::ClosingSquareBracket, string (&Read (pos, source))));
 				break;
 			case ',':
@@ -79,18 +70,15 @@ list<Token> Scanner::Scan (string src) {
 			case '*':
 			case '/':
 			case '%':
-				cout << "Scanning binary operation." << endl;
 				tokens.push_back (Token (TokenType::BinOp, string (&Read (pos, source))));
 				break;
 			case '<':
 			case '>':
 			case '=':
-				cout << "Scanning comparation." << endl;
 				tokens.push_back (Token (TokenType::CompOp, string (&Read (pos, source))));
 				break;
 			case '!':
 				if (Peek (pos, 2, source) == '=') {
-					cout << "Scanning comparation." << endl;
 					pos += 2;
 					tokens.push_back (Token (TokenType::CompOp, "!="));
 					break;
@@ -99,12 +87,11 @@ list<Token> Scanner::Scan (string src) {
 				break;
 			case ':':
 				if (Peek (pos, 2, source) == '=') {
-					cout << "Scanning assignment." << endl;
 					pos += 2;
 					tokens.push_back (Token (TokenType::AssignOp, ":="));
 					break;
 				} else
-					throw exception ("Expected '=' character.");
+					throw exception ("Expected '=' character after ':' character.");
 			default:
 				cout << "Unexpected: " << Peek (pos, 1, source) << endl;
 				throw exception ("Invalid token!");
@@ -117,15 +104,16 @@ list<Token> Scanner::Scan (string src) {
 
 Token Scanner::ScanIdentifier () {
 	stringstream accum;
-	cout << "Scanning identifier." << endl;
 	while (CanAdvance (pos, 1, source) && (isalnum (Peek (pos, 1, source)) || Peek (pos, 1, source) == '.'))
 		accum << Read (pos, source);
 	double dbl;
 	accum >> noskipws >> dbl;
 	bool is_double = accum.eof () && !accum.fail ();
-	cout << "Identifier: " << accum.str () << endl;
-	if (is_double)
+	if (is_double) {
+		cout << "Number: " << accum.str () << endl;
 		return Token (TokenType::Double, accum.str ());
+	}
+	cout << "Identifier: " << accum.str () << endl;
 	return Token (TokenType::Identifier, accum.str ());
 }
 
@@ -137,7 +125,8 @@ Token Scanner::ScanString () {
 		if (current == opening_char) {
 			++pos;
 			break;
-		} else if (current == '\'' || current == '"') {
+		} else if (current == '\\') {
+			accum << Read (pos, source);
 			accum << Read (pos, source);
 		} else
 			accum << Read (pos, source);
